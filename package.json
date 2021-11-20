@@ -1,0 +1,22 @@
+{
+  "name": "btc-tx-parser",
+  "version": "1.0.0",
+  "description": "This is a samle task for bitgo interview",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "bitgo",
+    "ancestor"
+  ],
+  "author": "techsavvy",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "bunyan": "^1.8.12",
+    "express": "^4.17.1",
+    "helmet": "^3.21.2",
+    "request-promise": "^4.2.6"
+  }
+}
