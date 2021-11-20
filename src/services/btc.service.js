@@ -1,7 +1,6 @@
 // @ts-check
 const {REQUEST} = require('../services/http.service');
 const { btcBaseAPiUrl } = require('../config/config')
-const fs = require("fs")
 const l = require('../utils/logger').root.child({ 'module': '[BTC-Svc]' })
 
 
@@ -51,12 +50,13 @@ async function fetchAllTxOfBlock(blockHash) {
   
   let offset = 0;
   let promises = []
-  while(offset <= tx_count) {
+  while(offset < tx_count) {
     promises.push(findTxOfBlock(blockHash, offset));
     offset += 25
   }
   let txs = (await Promise.all(promises)).flat();
 
+  // Synchronous way
   // const txs = [];
   // while(txs.length < tx_count) {
   //   // this can be run in parallel to fetch 0-25;  25-50 using Promise.all
@@ -64,7 +64,6 @@ async function fetchAllTxOfBlock(blockHash) {
   //   txs.push(...currentTxs);
   // }
   txsByBlockHash[blockHash] = txs;
-  fs.writeFileSync("./my1.json", JSON.stringify(txs))
   return txs
 }
 

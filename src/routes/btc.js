@@ -8,13 +8,16 @@ const { getBlockHash,fetchAllTxOfBlock } = require('../services/btc.service')
 const { formatTx, findAncestor } = require('../utils/tx')
 
 
-
+/**
+ * Route to get ancestors of a given block
+ */
 router.get('/ancestors/:blockNumber', async(req, res) => {
   try {
-    let  blockNumber  = parseInt(req.params.blockNumber);
-    console.log({blockNumber})
+    let blockNumber  = parseInt(req.params.blockNumber);
+    l.debug(`Fetching ancestors of block`, {blockNumber})
     if(isNaN(blockNumber)) throw("Invalid block number")
-    let data = await getAncestorCount(blockNumber)
+    let limit = req.query.limit || 10;
+    let data = await getAncestorCount(blockNumber, limit)
     return handleResponse(res, 200, 'Fetched successfully', data);
   } catch(error) {
     l.error(`Error in getting ancestor`, { error})
@@ -23,19 +26,20 @@ router.get('/ancestors/:blockNumber', async(req, res) => {
 })
 
 
-function findLargetAncestors(ancCount, limt=10) {
-  return Object.entries(ancCount).sort((a,b) => a[1] - b[1]).slice(0, limt)
+function findLargetAncestors(ancCount, limit) {
+  let sortedAncCount = Object.entries(ancCount).sort((a,b) => b[1] - a[1])
+  if(limit) {
+    sortedAncCount = sortedAncCount.slice(0, limit)
+  }
+  return Object.fromEntries(sortedAncCount);
 }
 
-async function getAncestorCount(blockHeight) {
+async function getAncestorCount(blockHeight, limit) {
   if(typeof blockHeight != 'number') {
     throw ("Invalid block height")
   }
   const blockHash = await getBlockHash(blockHeight);
-  let allTxs = fs.readFileSync('./my.json', 'utf-8')
-  allTxs = JSON.parse(allTxs)
-
-  //let allTxs = await fetchAllTxOfBlock(blockHash);
+  let allTxs = await fetchAllTxOfBlock(blockHash);
   let txMaps = formatTx(allTxs);
   let ancestorCountOfTx =  {};
   Object.keys(txMaps).forEach(tx => {
@@ -43,7 +47,7 @@ async function getAncestorCount(blockHeight) {
     ancestorCountOfTx[tx] = parentCount;
   })
 
-  return findLargetAncestors(ancestorCountOfTx, 10);
+  return findLargetAncestors(ancestorCountOfTx, limit);
 
 }
 
